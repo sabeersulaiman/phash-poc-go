@@ -1,11 +1,9 @@
 package phash_test
 
 import (
-	"path/filepath"
-	"runtime"
 	"testing"
 
-	"k8s.io/klog/v2"
+	"github.com/stretchr/testify/assert"
 	"phash-poc.mmt.com/phash"
 )
 
@@ -28,14 +26,53 @@ func TestHashGeneration(t *testing.T) {
 
 	for _, tCase := range images {
 		hash := phash.GenerateImagePhash(tCase.image)
-		assert(t, hash == tCase.imageHash, "phash do not match")
+		assert.Equal(t, tCase.imageHash, hash)
 	}
 }
 
-func assert(tb testing.TB, condition bool, msg string, v ...interface{}) {
-	if !condition {
-		_, file, line, _ := runtime.Caller(1)
-		klog.Infof("\033[31m%s:%d: "+msg+"\033[39m\n\n", append([]interface{}{filepath.Base(file), line}, v...)...)
-		tb.FailNow()
+func TestCorrectedHashGeneration(t *testing.T) {
+	images := []ImagePhashCase{
+		{
+			image:     "../images/3.jpg",
+			imageHash: "83daac7396aa4d92",
+		},
+		{
+			image:     "../images/7.jpg",
+			imageHash: "f3980da7ec62e328",
+		},
+		{
+			image:     "../images/1.png",
+			imageHash: "c285be6bd0375139",
+		},
+		{
+			image:     "../images/2.png",
+			imageHash: "c689f28028deb95f",
+		},
+		{
+			image:     "../images/1.webp",
+			imageHash: "c29f3ef0c80f650e",
+		},
+		{
+			image:     "../images/2.webp",
+			imageHash: "e619c33e09f424f3",
+		},
+		{
+			image:     "../images/1.bmp",
+			imageHash: "c5f82b093ec47707",
+		},
+		{
+			image:     "../images/2.bmp",
+			imageHash: "818e17f1ea215e5b",
+		},
+		{
+			image:     "../images/1.tiff",
+			imageHash: "dada03a55c1cb60f",
+		},
+	}
+
+	for _, tCase := range images {
+		hash := phash.ImagePerceptualHash(tCase.image)
+		t.Logf("expected: %s; actual: %s, image: %s\n", tCase.imageHash, hash, tCase.image)
+		assert.Equal(t, tCase.imageHash, hash)
 	}
 }
